@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Prometheus Monitoring for BW application
 Bundle-SymbolicName: com.tibco.bw.prometheus.monitor
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.11.qualifier
 Bundle-ClassPath: .,
  lib/jetty-server-12.0.5.jar,
  lib/simpleclient_common-0.16.0.jar,
@@ -32,6 +32,7 @@ Import-Package: .;version="1.0.200",
  io.micrometer.core.instrument.binder.jvm,
  io.micrometer.core.instrument.binder.system,
  io.micrometer.prometheus,
+ io.prometheus.client,
  javax.servlet;version="2.10.0",
  javax.servlet.http;version="2.10.0",
  org.apache.http;version="4.10.0",
@@ -47,6 +48,7 @@ Import-Package: .;version="1.0.200",
  org.apache.http.message;version="4.10.0",
  org.apache.http.util;version="4.10.0",
  org.eclipse.jetty.server;version="[9.0.0,9.9.0)",
+ org.eclipse.jetty.server.handler;version="9.4.1501",
  org.eclipse.jetty.servlet;version="[9.0.0,9.9.0)",
  org.eclipse.jetty.util.component;version="[9.0.0,9.9.0)",
  org.osgi.framework;version="[1.3.0,2.0.0)",

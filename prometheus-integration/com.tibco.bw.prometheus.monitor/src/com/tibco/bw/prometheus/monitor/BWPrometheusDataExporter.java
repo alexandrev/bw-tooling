@@ -26,14 +26,15 @@ public class BWPrometheusDataExporter {
 
 	
 	public static void exportMetrics() throws Exception{
-		if(System.getenv("BW_PROMETHEUS_PORT") != null) {
-			port = Integer.parseInt(System.getenv("BW_PROMETHEUS_PORT"));
-		}
+
+		
+		port = ConfigurationManager.getInstance().getPrometheusPort();
 		
 		server = new Server(port);
 	    ServletContextHandler context = new ServletContextHandler();
 	    context.setContextPath("/");
 	    server.setHandler(context);
+	   
 	    initMetrics();
 		
 		CollectorRegistry cr = CollectorRegistry.defaultRegistry;
