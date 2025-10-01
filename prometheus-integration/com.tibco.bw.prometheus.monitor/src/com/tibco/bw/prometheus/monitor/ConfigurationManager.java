@@ -13,7 +13,7 @@ public class ConfigurationManager {
 	private static final String BW_PROMETHEUS_ENABLE = "BW_PROMETHEUS_ENABLE";
 	private  static final String BW_PROMETHEUS_DETAILS_ENABLE = "BW_PROMETHEUS_DETAILS_ENABLE";
 	private  static final String BW_PROMETHEUS_ACTIVITY_ENABLE = "BW_PROMETHEUS_ACTIVITY_ENABLE";
-	private  static final String BW_PROMETHEUS_PROMETHEUS_PORT = "BW_PROMETHEUS_PROMETHEUS_PORT";
+	private  static final String BW_PROMETHEUS_PROMETHEUS_PORT = "BW_PROMETHEUS_PORT";
 	
 	
 	private boolean isPrometheusEnabled = false;

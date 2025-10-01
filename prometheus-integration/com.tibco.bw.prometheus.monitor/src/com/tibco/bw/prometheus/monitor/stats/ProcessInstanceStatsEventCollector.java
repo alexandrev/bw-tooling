@@ -10,6 +10,8 @@ import static com.tibco.bw.prometheus.monitor.util.StatCollectionConstant.STATUS
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
@@ -34,7 +36,7 @@ public class ProcessInstanceStatsEventCollector implements EventHandler {
 	private static final String BW_APPSPACE_PROPERTY = "bw.appspace";
 	private ConfigurationManager config = ConfigurationManager.getInstance();
 
-	private final Map<String, Map<String, Object>> statMaps = new HashMap<String, Map<String, Object>>();
+	private final ConcurrentMap<String, Map<String, Object>> statMaps = new ConcurrentHashMap<String, Map<String, Object>>();
 	private ContianerInfo deploymentInfo = ContianerInfo.get();
 
     static final Counter processStatsTotalCounter = Counter.build().name("process_events_count").help("BWCE Process Events count by Process").labelNames("ProcessName", "StateName").register();
@@ -101,14 +103,16 @@ public class ProcessInstanceStatsEventCollector implements EventHandler {
 		return value != null ? value : "-";
 	}
 
-	private void addStatsToMetrics(final Map<String, Object> pStatMap, final ProcessAuditEvent event) {
+	private void addStatsToMetrics(final Map<String, Object> pStatMap,
+			final ProcessAuditEvent event) {
 		try {
 			ProcessStats pis = new ProcessStats();
 			pis.setApplicationName(event.getApplicationName());
 			pis.setApplicationVersion(event.getApplicationVersion());
 			pis.setModuleName(event.getModuleName());
 			pis.setModuleVersion(event.getModuleVersion());
-			pis.setComponentProcessName(getNonNullValue(event.getComponentProcessName()));
+		pis.setComponentProcessName(getNonNullValue(event
+				.getComponentProcessName()));
 			pis.setJobId(event.getJobId());
 			pis.setProcessName(event.getProcessName());
 			if (event.getParentProcessName() == null && event.getParentProcessInstanceId() == null) {
@@ -119,24 +123,21 @@ public class ProcessInstanceStatsEventCollector implements EventHandler {
 				pis.setParentProcessInstanceId(event.getParentProcessInstanceId());
 			}
 			pis.setProcessInstanceId(event.getProcessInstanceId());
-			pis.setProcessInstanceState(event.getProcessInstanceState().name());
 			if (State.STARTED == event.getProcessInstanceState()) {
 				pis.setProcessInstanceStartTime(Utils.convertTimeToString(event.getProcessInstanceStartTime()));
 				pis.setProcessInstanceEndTime(Utils.convertTimeToString((Long) pStatMap.get(END_TIME_PROPERTY)));
 				if (event.getProcessInstanceEndTime() != null) {
-					pis.setProcessInstanceDurationTime(
-							(Long) pStatMap.get(END_TIME_PROPERTY) - event.getProcessInstanceEndTime());
+					pis.setProcessInstanceDurationTime((Long) pStatMap.get(END_TIME_PROPERTY) - event.getProcessInstanceEndTime());
 				}
 			} else if (State.COMPLETED == event.getProcessInstanceState()
 					|| State.FAULTED == event.getProcessInstanceState()
 					|| State.CANCELLED == event.getProcessInstanceState()) {
 				pis.setProcessInstanceStartTime(Utils.convertTimeToString((Long) pStatMap.get(START_TIME_PROPERTY)));
 				pis.setProcessInstanceEndTime(Utils.convertTimeToString(event.getProcessInstanceEndTime()));
-				pis.setProcessInstanceDurationTime(
-						(event.getProcessInstanceEndTime() - (Long) pStatMap.get(START_TIME_PROPERTY)));
+				pis.setProcessInstanceDurationTime((event.getProcessInstanceEndTime() - (Long) pStatMap.get(START_TIME_PROPERTY)));
 				updateProcessDurationCounter(pis);
 			}
-
+			pis.setProcessInstanceState(event.getProcessInstanceState().name());
 			if (deploymentInfo.isBWCE()) {
 				String containerName = deploymentInfo.getContainerName();
 				if (containerName != null) {

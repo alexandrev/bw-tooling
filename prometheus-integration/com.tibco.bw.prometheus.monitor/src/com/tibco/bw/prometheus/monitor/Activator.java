@@ -41,24 +41,28 @@ public class Activator implements BundleActivator {
 		if (config.isPrometheusEnabled()) {
 			logger.info("Starting the Prometheus Monitoring Bundle");
 
+			//register activity stats service
 
+			if(config.isActivityEnabled()) {
+				Dictionary<String, Object> activityProp = new Hashtable<>();
+				String[] activityStatsServiceNames = new String[] {EventHandler.class.getName(), ActivityStatsEventCollector.class.getName()};
+				String[] activityEventTopics = new String[] {AuditEventConstants.ACTIVITY_AUDIT_EVENT_TYPE};
+				activityProp.put(EventConstants.EVENT_TOPIC, activityEventTopics);
+				activityProp.put(StatCollectionConstant.BW_EVENT_TYPE_PROPERTY, StatCollectionConstant.BW_EVENT_TYPE_PROPERTY_VALUE);
+				context.registerService(activityStatsServiceNames, new ActivityStatsEventCollector(), activityProp);
+			}
+			
+			//register process stats service
+			Dictionary<String, Object> processProp = new Hashtable<>();
 			String[] processStatsServiceNames = new String[] {EventHandler.class.getName(), ProcessInstanceStatsEventCollector.class.getName()};
 			String[] processEventTopics = new String[] {AuditEventConstants.PROCESS_INSTANCE_AUDIT_EVENT_TYPE};
 			
-			Dictionary<String, Object> properties = new Hashtable<>();
-			properties.put(EventConstants.EVENT_TOPIC, processEventTopics);
-			properties.put(StatCollectionConstant.BW_EVENT_TYPE_PROPERTY, StatCollectionConstant.BW_EVENT_TYPE_PROPERTY_VALUE);
-			context.registerService(processStatsServiceNames, new ProcessInstanceStatsEventCollector(), properties);
+			processProp.put(EventConstants.EVENT_TOPIC, processEventTopics);
+			processProp.put(StatCollectionConstant.BW_EVENT_TYPE_PROPERTY, StatCollectionConstant.BW_EVENT_TYPE_PROPERTY_VALUE);
+			context.registerService(processStatsServiceNames, new ProcessInstanceStatsEventCollector(), processProp);
 			
-			if(config.isActivityEnabled()) {
-				Dictionary<String, Object> propertiesEvents = new Hashtable<>();
-				String[] activityStatsServiceNames = new String[] {EventHandler.class.getName(), ActivityStatsEventCollector.class.getName()};
-				String[] activityEventTopics = new String[] {AuditEventConstants.ACTIVITY_AUDIT_EVENT_TYPE};
-				propertiesEvents.put(EventConstants.EVENT_TOPIC, activityEventTopics);
-				propertiesEvents.put(StatCollectionConstant.BW_EVENT_TYPE_PROPERTY, StatCollectionConstant.BW_EVENT_TYPE_PROPERTY_VALUE);
-				context.registerService(activityStatsServiceNames, new ActivityStatsEventCollector(), propertiesEvents);
-			}
 
+			BWPrometheusDataExporter.exportMetrics();
 			PrometheusCollector.run();
 		} 
 	}
@@ -68,6 +72,7 @@ public class Activator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext bundleContext) throws Exception {
+		BWPrometheusDataExporter.shutdownServer();
 		logger.info("Prometheus Monitoring Bundle Stopped.");
 		Activator.context = null;
 	}

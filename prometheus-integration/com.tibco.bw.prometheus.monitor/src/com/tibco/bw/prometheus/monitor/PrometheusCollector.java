@@ -2,46 +2,36 @@
 
 package com.tibco.bw.prometheus.monitor;
 
-import io.prometheus.client.Collector;
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.exporter.HTTPServer;
-import io.prometheus.client.hotspot.DefaultExports;
-
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import javax.xml.namespace.QName;
 
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tibco.bw.prometheus.monitor.stats.ActivityStatsEventCollector;
-import com.tibco.bw.prometheus.monitor.stats.ProcessInstanceStatsEventCollector;
 import com.tibco.bw.prometheus.monitor.util.Utils;
 import com.tibco.bw.sharedresource.http.inbound.api.HttpConnector;
 import com.tibco.bw.sharedresource.http.inbound.api.HttpServletApplicationModel;
 import com.tibco.bw.sharedresource.runtime.ResourceReference;
 import com.tibco.neo.exception.BaseException;
 
+import io.prometheus.client.Collector;
+
 public class PrometheusCollector extends Collector {
 	private static Logger logger = LoggerFactory.getLogger(PrometheusCollector.class);
-	public static HTTPServer server;
-	private final static InetSocketAddress PROMETHEUS_MONITOR_PORT = new InetSocketAddress(ConfigurationManager.getInstance().getPrometheusPort());
 	
+	private static final QName HTTPCONNECTOR_TYPE = new QName("http://xsd.tns.tibco.com/bw/models/sharedresource/httpconnector","HttpConnectorConfiguration");
 	private final static CountDownLatch proxyInitLatch = new CountDownLatch(1);
 	private static final String APPLICATION_NAME = "application_name";
 	
 	public static void run() {
 		logger.info("Prometheus Collector started");
 		try {
-			CollectorRegistry cr = CollectorRegistry.defaultRegistry;
-			cr.register(new PrometheusCollector());
-			server = new HTTPServer(PROMETHEUS_MONITOR_PORT, cr);	
-			DefaultExports.initialize();
 			
 			if (Utils.isPCF()) {
 				try {
@@ -72,7 +62,7 @@ public class PrometheusCollector extends Collector {
 		tracker.open();
 		if (tracker.getServiceReferences() != null) {
 			for (ServiceReference<ResourceReference> serviceRef : tracker.getServiceReferences()) {
-				if (serviceRef != null && serviceRef.getProperty(".type").equals("{http://xsd.tns.tibco.com/bw/models/sharedresource/httpconnector}HttpConnectorConfiguration")) {
+				if (serviceRef != null && serviceRef.getProperty(".type").equals(HTTPCONNECTOR_TYPE.toString())) {
 					ResourceReference reference = tracker.getService(serviceRef);
 					if (reference != null) {
 						HttpConnector connector = (HttpConnector) reference.getResource();
