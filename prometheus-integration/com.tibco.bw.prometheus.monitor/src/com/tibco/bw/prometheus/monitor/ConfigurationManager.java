@@ -14,6 +14,7 @@ public class ConfigurationManager {
 	private  static final String BW_PROMETHEUS_DETAILS_ENABLE = "BW_PROMETHEUS_DETAILS_ENABLE";
 	private  static final String BW_PROMETHEUS_ACTIVITY_ENABLE = "BW_PROMETHEUS_ACTIVITY_ENABLE";
 	private  static final String BW_PROMETHEUS_PROMETHEUS_PORT = "BW_PROMETHEUS_PORT";
+	private static final String BW_PROMETHEUS_HTTP_METRICS = "BW_PROMETHEUS_HTTP_METRICS";
 	
 	
 	private boolean isPrometheusEnabled = false;
@@ -21,6 +22,7 @@ public class ConfigurationManager {
 	private boolean isProcessDetailedEnabled = true;
 	private boolean isActivityEnabled = true;
 	private int prometheusPort = 9095;
+	private boolean isHTTPMetricsEnabled = false;
 	
 	private ConfigurationManager(){
 		init();		
@@ -40,6 +42,13 @@ public class ConfigurationManager {
 			isActivityDetailedEnabled = false;
 			isActivityEnabled = false;
 		}
+		
+
+		if ((System.getenv(BW_PROMETHEUS_HTTP_METRICS) != null && System.getenv(BW_PROMETHEUS_HTTP_METRICS).equalsIgnoreCase("true")) || (System.getProperty(BW_PROMETHEUS_HTTP_METRICS) != null && System.getProperty(BW_PROMETHEUS_HTTP_METRICS).equalsIgnoreCase("true"))) {
+			
+			isHTTPMetricsEnabled =true;
+		}
+		
 		
 		try {
 			if (System.getenv(BW_PROMETHEUS_PROMETHEUS_PORT) != null){
@@ -117,6 +126,15 @@ public class ConfigurationManager {
 		return prometheusPort;
 	}
 
+	public boolean isHTTPMetricsEnabled() {
+		return isHTTPMetricsEnabled;
+	}
+
+	public void setHTTPMetricsEnabled(boolean isHTTPMetricsEnabled) {
+		this.isHTTPMetricsEnabled = isHTTPMetricsEnabled;
+	}
+
+	
 
 	
 	
