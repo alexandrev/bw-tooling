@@ -41,7 +41,7 @@ public class BWPrometheusDataExporter {
 		
 		// enable http endpoint metrics
 		if(config.isHTTPMetricsEnabled()) {
-			httpRegistry = BWMicrometerRegistryProvider.prometheusRegistry;
+			httpRegistry = BWMicrometerRegistryProvider.getInstance().prometheusRegistry;
 		}
 
 		PrometheusMeterRegistry systemRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);	    
